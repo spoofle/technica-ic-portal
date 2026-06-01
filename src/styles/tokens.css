@@ -1,0 +1,86 @@
+/* =========================================================================
+   Technica Inclusive Communities — Design Tokens
+   -------------------------------------------------------------------------
+   A warm, inclusive pastel palette inspired by Technica's brand identity.
+   Soft purples + coral + mint with warm neutral backgrounds and a deep
+   plum text color for high contrast (WCAG AA+).
+
+   To match Technica's EXACT brand colors later, just swap the hex values
+   below — every component reads from these variables.
+   ========================================================================= */
+
+:root {
+  /* ---- Brand colors ---- */
+  --color-primary: #7b5ea7;          /* friendly Technica purple */
+  --color-primary-hover: #684f93;    /* darker for hover states  */
+  --color-primary-active: #573f80;   /* darkest for active/pressed */
+  --color-primary-soft: #ede6f7;     /* tinted purple surface    */
+
+  --color-coral: #f4978e;            /* warm coral accent        */
+  --color-coral-soft: #fde7e4;
+  --color-mint: #6fd3c7;             /* calming mint accent      */
+  --color-mint-soft: #e0f5f2;
+  --color-sun: #ffd28f;              /* soft sunny highlight     */
+  --color-sun-soft: #fff3df;
+
+  /* ---- Neutrals / backgrounds ---- */
+  --color-bg: #fbf7f4;               /* warm off-white page bg   */
+  --color-surface: #ffffff;          /* cards, panels            */
+  --color-surface-alt: #f5f1fa;      /* subtle lilac surface     */
+  --color-border: #e7ddee;           /* gentle borders           */
+
+  /* ---- Text (high contrast on light bg) ---- */
+  --color-text: #2b2540;             /* deep plum, ~12:1 on bg   */
+  --color-text-soft: #5b5470;        /* secondary text          */
+  --color-text-on-primary: #ffffff;  /* text on purple          */
+
+  /* ---- Feedback ---- */
+  --color-success: #3f9d6d;
+  --color-success-soft: #e3f5ec;
+  --color-error: #d2614f;
+  --color-error-soft: #fbe6e2;
+
+  /* ---- Typography ---- */
+  --font-body: "Nunito", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-heading: "Nunito", "Segoe UI", system-ui, sans-serif;
+
+  --text-xs: 0.8rem;
+  --text-sm: 0.9rem;
+  --text-base: 1.05rem;   /* slightly larger base for readability */
+  --text-lg: 1.25rem;
+  --text-xl: 1.6rem;
+  --text-2xl: 2.1rem;
+  --text-3xl: 2.8rem;
+
+  --leading-relaxed: 1.7; /* generous line height for reading    */
+
+  /* ---- Shape & elevation (rounded, soft) ---- */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 2px 8px rgba(123, 94, 167, 0.08);
+  --shadow-md: 0 6px 20px rgba(123, 94, 167, 0.12);
+  --shadow-lg: 0 14px 40px rgba(123, 94, 167, 0.16);
+
+  /* ---- Spacing scale ---- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-8: 3rem;
+
+  /* ---- Layout ---- */
+  --sidebar-width: 264px;
+  --topbar-height: 68px;
+  --content-max: 760px;
+
+  /* ---- Motion ---- */
+  --transition: 160ms ease;
+
+  /* ---- Accessible focus ring ---- */
+  --focus-ring: 0 0 0 3px rgba(123, 94, 167, 0.45);
+}

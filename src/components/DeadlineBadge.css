@@ -1,0 +1,45 @@
+.deadline {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.deadline__required {
+  font-size: var(--text-xs);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-coral);
+  background-color: var(--color-coral-soft);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-pill);
+}
+
+.deadline__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+}
+
+/* Tone variants */
+.deadline__badge--neutral {
+  background-color: var(--color-surface-alt);
+  color: var(--color-text-soft);
+}
+.deadline__badge--warn {
+  background-color: var(--color-sun-soft);
+  color: #9a6a16;
+}
+.deadline__badge--error {
+  background-color: var(--color-error-soft);
+  color: var(--color-error);
+}
+.deadline__badge--success {
+  background-color: var(--color-success-soft);
+  color: var(--color-success);
+}

@@ -1,0 +1,33 @@
+.savebar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+}
+
+.savebar__status {
+  font-weight: 700;
+  font-size: var(--text-sm);
+  color: var(--color-text-soft);
+  margin-right: auto;
+}
+
+/* Tone the status text by state */
+.savebar--saved .savebar__status {
+  color: var(--color-success);
+}
+.savebar--unsaved .savebar__status {
+  color: #9a6a16;
+}
+.savebar--error {
+  background-color: var(--color-error-soft);
+  border-color: var(--color-error);
+}
+.savebar--error .savebar__status {
+  color: var(--color-error);
+}

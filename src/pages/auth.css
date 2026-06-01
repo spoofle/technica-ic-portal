@@ -1,0 +1,100 @@
+/* =========================================================================
+   Shared layout for Sign In / Sign Up — a centered welcoming card on a
+   soft gradient background.
+   ========================================================================= */
+.auth {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  background: linear-gradient(135deg, var(--color-primary-soft), var(--color-mint-soft));
+}
+
+/* Left welcome panel */
+.auth__welcome {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-8);
+  color: var(--color-text);
+}
+.auth__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+.auth__logo {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  font-size: 1.6rem;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-coral));
+  color: #fff;
+}
+.auth__brand-text strong { display: block; font-size: var(--text-lg); }
+.auth__brand-text span { color: var(--color-text-soft); font-weight: 600; }
+.auth__welcome h1 {
+  font-size: var(--text-3xl);
+  max-width: 12ch;
+}
+.auth__welcome p {
+  font-size: var(--text-lg);
+  color: var(--color-text-soft);
+  max-width: 42ch;
+}
+.auth__points {
+  list-style: none;
+  padding: 0;
+  margin: var(--space-4) 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.auth__points li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-weight: 600;
+}
+.auth__points span {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-surface);
+  flex-shrink: 0;
+}
+
+/* Right form panel */
+.auth__panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+}
+.auth__card {
+  width: 100%;
+  max-width: 420px;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8) var(--space-6);
+  box-shadow: var(--shadow-lg);
+}
+.auth__card h2 { margin-top: 0; }
+.auth__card-sub {
+  color: var(--color-text-soft);
+  margin-top: calc(-1 * var(--space-2));
+}
+.auth__switch {
+  margin-top: var(--space-5);
+  text-align: center;
+  color: var(--color-text-soft);
+}
+
+@media (max-width: 860px) {
+  .auth { grid-template-columns: 1fr; }
+  .auth__welcome { display: none; }
+}

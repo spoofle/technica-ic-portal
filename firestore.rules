@@ -1,0 +1,30 @@
+rules_version = '2';
+
+// =========================================================================
+// Firestore security rules for Technica Inclusive Communities
+// -------------------------------------------------------------------------
+// Each signed-in student can read and write ONLY their own profile and
+// progress documents. Nobody can read another student's journal entries.
+// Deploy with:  firebase deploy --only firestore:rules
+// =========================================================================
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // A user's own profile document: users/{uid}
+    match /users/{userId} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == userId;
+
+      // A user's lesson progress: users/{uid}/progress/{lessonId}
+      match /progress/{lessonId} {
+        allow read, write: if request.auth != null
+                           && request.auth.uid == userId;
+      }
+    }
+
+    // Everything else is denied by default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
