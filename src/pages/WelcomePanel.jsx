@@ -12,18 +12,17 @@ export default function WelcomePanel() {
         </div>
       </div>
 
-      <h1>A warm place to learn together.</h1>
+      <h1>Technica Summer Fellowship</h1>
       <p>
-        Follow along with live lessons, try interactive activities, and reflect
-        in your own private journal.
+        Follow along with live lessons, learn through interactive activities, and work on projects throughout the summer.
       </p>
 
       <ul className="auth__points">
         <li>
-          <span aria-hidden="true">📚</span> Friendly, guided lessons
+          <span aria-hidden="true">📚</span> Guided lessons on computer science concepts
         </li>
         <li>
-          <span aria-hidden="true">✏️</span> Quizzes, journaling &amp; activities
+          <span aria-hidden="true">✏️</span> Quizzes and homework activities
         </li>
         <li>
           <span aria-hidden="true">🌟</span> Your progress, saved automatically
