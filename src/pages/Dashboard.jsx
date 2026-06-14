@@ -18,8 +18,8 @@ export default function Dashboard() {
         <h1>Hi {name}, ready to learn together? 🌱</h1>
         <p>
           Work through your modules below. Anything marked{" "}
-          <strong>Required</strong> needs to be finished by its due date — keep
-          an eye on the deadline badges.
+          <strong>Required</strong> needs to be finished by its due date. Keep
+          an eye on the deadline badges!
         </p>
       </section>
 

@@ -129,7 +129,7 @@ export default function MyJournal() {
         <h1>My Journal 📔</h1>
         <p>
           Your reflections, quiz answers, and project submissions across every
-          lesson — gathered in one place and private to you.
+          lesson, gathered in one place and private to you.
         </p>
       </header>
 

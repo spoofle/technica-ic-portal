@@ -12,6 +12,7 @@ import {
 } from "../../firebase/lessonsApi";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
+import { formatDate } from "../../utils/time";
 import "./instructor.css";
 
 // A lesson is visible to students only when published === true.
@@ -235,6 +236,14 @@ export default function LessonManager() {
                       {lesson.dueDate ? ` · due ${lesson.dueDate}` : ""}
                       {lesson.required ? " · Required" : ""}
                     </div>
+                    {lesson.lastEditedBy && (
+                      <div className="manager__row-edited">
+                        Last edited by {lesson.lastEditedBy}
+                        {formatDate(lesson.updatedAt)
+                          ? ` · ${formatDate(lesson.updatedAt)}`
+                          : ""}
+                      </div>
+                    )}
                   </div>
                   <div className="manager__row-actions">
                     <Button

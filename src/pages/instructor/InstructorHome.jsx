@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useLessons } from "../../context/LessonsContext";
 import { lessons as seedData } from "../../data/lessons";
 import { seedLessons } from "../../firebase/lessonsApi";
+import { fetchInstructors } from "../../firebase/usersApi";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import "./instructor.css";
@@ -17,9 +18,27 @@ export default function InstructorHome() {
   const { lessons, loading, error, reload } = useLessons();
   const [seeding, setSeeding] = useState(false);
   const [seedError, setSeedError] = useState("");
+  const [instructors, setInstructors] = useState([]);
 
   const name =
     currentUser?.displayName || currentUser?.email?.split("@")[0] || "there";
+
+  // Load the instructor roster on mount.
+  useEffect(() => {
+    let active = true;
+    fetchInstructors()
+      .then((list) => {
+        if (active) setInstructors(list);
+      })
+      .catch((err) => console.warn("Couldn't load instructors:", err));
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const sortedInstructors = [...instructors].sort((a, b) =>
+    (a.displayName || a.email || "").localeCompare(b.displayName || b.email || "")
+  );
 
   async function handleSeed() {
     setSeedError("");
@@ -83,11 +102,35 @@ export default function InstructorHome() {
               ? "Loading lessons…"
               : `${lessons.length} lesson${
                   lessons.length === 1 ? "" : "s"
-                } — create, edit, reorder, or set deadlines.`}
+                }: create, edit, reorder, or set deadlines.`}
           </p>
           <span className="instructor__tile-cta">Open manager →</span>
         </Card>
       </div>
+
+      <Card className="instructor__people-card">
+        <h2>Instructors</h2>
+        <p className="instructor__subtitle">Everyone with instructor access.</p>
+        <ul className="people">
+          {sortedInstructors.map((p) => {
+            const isMe = p.uid === currentUser?.uid;
+            return (
+              <li key={p.uid} className="person">
+                <span className="person__name">
+                  {p.displayName || p.email}
+                  {isMe && <span className="person__you"> (you)</span>}
+                </span>
+                {p.email && p.displayName && (
+                  <span className="person__status">{p.email}</span>
+                )}
+              </li>
+            );
+          })}
+          {sortedInstructors.length === 0 && (
+            <li className="instructor__empty">No instructors found yet.</li>
+          )}
+        </ul>
+      </Card>
     </div>
   );
 }

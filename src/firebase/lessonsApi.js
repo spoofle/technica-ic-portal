@@ -26,7 +26,7 @@ import {
   writeBatch,
   serverTimestamp,
 } from "firebase/firestore";
-import { db } from "./config";
+import { auth, db } from "./config";
 
 const lessonsCol = () => collection(db, "lessons");
 
@@ -52,12 +52,18 @@ export async function fetchLesson(lessonId) {
 
 // ---- Writes (instructor-only, enforced by rules) ----
 
-// Create or replace a lesson document. Stamps updatedAt server-side.
+// Create or replace a lesson document. Stamps updatedAt + who last edited it
+// (from the signed-in user) so other instructors know who to ask about it.
 export async function saveLesson(lesson) {
   const { id } = lesson;
   if (!id) throw new Error("saveLesson: lesson.id is required");
+  const editor = auth.currentUser;
   await setDoc(doc(db, "lessons", id), {
     ...lesson,
+    lastEditedBy: editor
+      ? editor.displayName || editor.email || "Unknown"
+      : lesson.lastEditedBy ?? null,
+    lastEditedByUid: editor?.uid ?? lesson.lastEditedByUid ?? null,
     updatedAt: serverTimestamp(),
   });
 }
