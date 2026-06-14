@@ -101,7 +101,12 @@ export default function LessonPage() {
     const saved = answers[sec.id];
     switch (sec.type) {
       case "quiz":
-        return saved?.selected === sec.correctOptionId;
+        // Trust the SAME correctness signal the quiz uses to show "Nice work!"
+        // so the success message and the unlock can never disagree. Fall back
+        // to the option-id check (and a legacy bare-boolean answer) for safety.
+        if (saved == null) return false;
+        if (saved === true) return true; // legacy: answer stored as a boolean
+        return saved.isCorrect === true || saved.selected === sec.correctOptionId;
       case "reflection":
         return Boolean(saved?.text && saved.text.trim().length > 0);
       case "dragdrop":
