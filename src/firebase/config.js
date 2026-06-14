@@ -8,7 +8,7 @@
 // =========================================================================
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { initializeFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -22,5 +22,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+// ignoreUndefinedProperties: when we migrate content sections to the block
+// model we clear old fields by setting them to undefined; this drops those
+// undefined values on write instead of throwing.
+export const db = initializeFirestore(app, {
+  ignoreUndefinedProperties: true,
+});
 export default app;

@@ -69,18 +69,146 @@ function StringList({ label, values = [], onChange, placeholder, rich = false })
   );
 }
 
-// Edit an optional object (code/link/image/media). Toggle presence with a
-// checkbox; when on, render the given fields.
-function OptionalGroup({ label, present, onToggle, children }) {
-  return (
-    <div className="field">
-      <label className="editor__checkbox">
-        <input type="checkbox" checked={present} onChange={(e) => onToggle(e.target.checked)} />
-        {label}
-      </label>
-      {present && <div className="editor__section-card">{children}</div>}
-    </div>
-  );
+// ---- Content blocks ----
+//
+// A content section's body is an ordered array of blocks the instructor can mix
+// freely: text, image, code, link, video. Older sections stored fixed fields;
+// legacyToBlocks() converts those to blocks the first time they're edited.
+
+const BLOCK_TYPES = [
+  { id: "text", label: "Text" },
+  { id: "image", label: "Image" },
+  { id: "code", label: "Code" },
+  { id: "link", label: "Link" },
+  { id: "video", label: "Video" },
+];
+
+function blankBlock(type) {
+  switch (type) {
+    case "image":
+      return { type: "image", src: "", alt: "" };
+    case "code":
+      return { type: "code", language: "html", content: "" };
+    case "link":
+      return { type: "link", text: "", url: "" };
+    case "video":
+      return { type: "video", embedId: "", title: "" };
+    case "text":
+    default:
+      return { type: "text", html: "" };
+  }
+}
+
+// Convert a legacy content section (fixed fields) into the block array, keeping
+// the original render order (body, image, text-below, video, code, link).
+function legacyToBlocks(section) {
+  const blocks = [];
+  (section.body || []).forEach((html) => blocks.push({ type: "text", html }));
+  if (section.image)
+    blocks.push({ type: "image", src: section.image.src || "", alt: section.image.alt || "" });
+  (section.bodyBelow || []).forEach((html) => blocks.push({ type: "text", html }));
+  if (section.media?.embedId)
+    blocks.push({ type: "video", embedId: section.media.embedId, title: section.media.title || "" });
+  if (section.code)
+    blocks.push({ type: "code", language: section.code.language || "html", content: section.code.content || "" });
+  if (section.link)
+    blocks.push({ type: "link", text: section.link.text || "", url: section.link.url || "" });
+  return blocks;
+}
+
+function blockHasContent(b) {
+  switch (b?.type) {
+    case "text":
+      return !!b.html?.trim();
+    case "image":
+      return !!b.src;
+    case "code":
+      return !!b.content?.trim();
+    case "link":
+      return !!b.url?.trim();
+    case "video":
+      return !!b.embedId?.trim();
+    default:
+      return false;
+  }
+}
+
+// The editable fields for one block, switched on its type.
+function BlockBody({ block, onChange }) {
+  switch (block.type) {
+    case "text":
+      return (
+        <RichTextField
+          id="block-text"
+          value={block.html || ""}
+          placeholder="Write a paragraph. Select text and click B / I / </> / 🔗 to format it."
+          onChange={(html) => onChange({ html })}
+        />
+      );
+    case "image":
+      return (
+        <ImageField
+          image={{ src: block.src, alt: block.alt }}
+          onChange={(img) => onChange({ src: img.src, alt: img.alt })}
+        />
+      );
+    case "code":
+      return (
+        <>
+          <Input
+            id="block-code-lang"
+            label="Language"
+            value={block.language || ""}
+            onChange={(e) => onChange({ language: e.target.value })}
+          />
+          <Input
+            as="textarea"
+            id="block-code-content"
+            label="Code"
+            rows={5}
+            value={block.content || ""}
+            onChange={(e) => onChange({ content: e.target.value })}
+          />
+        </>
+      );
+    case "link":
+      return (
+        <>
+          <Input
+            id="block-link-text"
+            label="Link text"
+            value={block.text || ""}
+            onChange={(e) => onChange({ text: e.target.value })}
+          />
+          <Input
+            id="block-link-url"
+            label="URL"
+            value={block.url || ""}
+            onChange={(e) => onChange({ url: e.target.value })}
+          />
+        </>
+      );
+    case "video":
+      return (
+        <>
+          <Input
+            id="block-video-id"
+            label="YouTube video ID"
+            hint="The part after watch?v= — e.g. dQw4w9WgXcQ"
+            value={block.embedId || ""}
+            onChange={(e) => onChange({ embedId: e.target.value })}
+          />
+          <Input
+            id="block-video-title"
+            label="Title"
+            value={block.title || ""}
+            onChange={(e) => onChange({ title: e.target.value })}
+          />
+        </>
+      );
+    default:
+      return null;
+  }
 }
 
 // ---- Per-type forms ----
@@ -88,14 +216,8 @@ function OptionalGroup({ label, present, onToggle, children }) {
 // Live preview of a content section, rendered with the SAME component students
 // see — so "how it looks" in the editor matches the lesson page exactly.
 function ContentPreview({ section }) {
-  const hasContent =
-    section.heading ||
-    section.body?.some((p) => p.trim()) ||
-    section.bodyBelow?.some((p) => p.trim()) ||
-    section.code ||
-    section.link ||
-    section.image ||
-    section.media;
+  const blocks = Array.isArray(section.blocks) ? section.blocks : [];
+  const hasContent = section.heading || blocks.some(blockHasContent);
   return (
     <div className="preview-box">
       <span className="preview-box__label">Preview — how students see it</span>
@@ -105,7 +227,7 @@ function ContentPreview({ section }) {
         </div>
       ) : (
         <p className="preview-box__empty">
-          Start typing above and your formatted content appears here.
+          Add a block above and your formatted content appears here.
         </p>
       )}
     </div>
@@ -113,6 +235,35 @@ function ContentPreview({ section }) {
 }
 
 function ContentForm({ section, set }) {
+  // Work in block mode. Migrate a legacy section to blocks on first edit, and
+  // drop the old fixed fields so there's a single source of truth.
+  const blocks = Array.isArray(section.blocks)
+    ? section.blocks
+    : legacyToBlocks(section);
+
+  function commit(nextBlocks) {
+    set({
+      blocks: nextBlocks,
+      body: undefined,
+      bodyBelow: undefined,
+      image: undefined,
+      code: undefined,
+      link: undefined,
+      media: undefined,
+    });
+  }
+  const updateBlock = (i, patch) =>
+    commit(blocks.map((b, idx) => (idx === i ? { ...b, ...patch } : b)));
+  const addBlock = (type) => commit([...blocks, blankBlock(type)]);
+  const removeBlock = (i) => commit(blocks.filter((_, idx) => idx !== i));
+  function moveBlock(i, dir) {
+    const j = dir === "up" ? i - 1 : i + 1;
+    if (j < 0 || j >= blocks.length) return;
+    const next = [...blocks];
+    [next[i], next[j]] = [next[j], next[i]];
+    commit(next);
+  }
+
   return (
     <>
       <Input
@@ -121,103 +272,66 @@ function ContentForm({ section, set }) {
         value={section.heading || ""}
         onChange={(e) => set({ heading: e.target.value })}
       />
-      <StringList
-        label="Body paragraphs — type normally; use the toolbar for bold, italic, code, or links"
-        values={section.body || []}
-        onChange={(body) => set({ body })}
-        placeholder="Write a paragraph. Select text and click B / I / </> / 🔗 to format it."
-        rich
-      />
 
-      <ContentPreview section={section} />
+      <span className="editor__small-label">
+        Content blocks — add text, images, code, links, or video in any order
+      </span>
 
-      <OptionalGroup
-        label="Include a code block"
-        present={!!section.code}
-        onToggle={(on) =>
-          set({ code: on ? { language: "html", content: "" } : undefined })
-        }
-      >
-        <Input
-          id="code-language"
-          label="Language"
-          value={section.code?.language || ""}
-          onChange={(e) =>
-            set({ code: { ...section.code, language: e.target.value } })
-          }
-        />
-        <Input
-          as="textarea"
-          id="code-content"
-          label="Code"
-          rows={5}
-          value={section.code?.content || ""}
-          onChange={(e) =>
-            set({ code: { ...section.code, content: e.target.value } })
-          }
-        />
-      </OptionalGroup>
+      {blocks.map((block, i) => (
+        <div key={i} className="editor__section-card">
+          <div className="editor__section-head">
+            <span className="editor__section-type">
+              {i + 1}. {block.type}
+            </span>
+            <div className="editor__section-actions">
+              <Button
+                type="button"
+                variant="ghost"
+                className="btn--tiny"
+                onClick={() => moveBlock(i, "up")}
+                disabled={i === 0}
+              >
+                ▲
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                className="btn--tiny"
+                onClick={() => moveBlock(i, "down")}
+                disabled={i === blocks.length - 1}
+              >
+                ▼
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                className="btn--tiny"
+                onClick={() => removeBlock(i)}
+              >
+                Delete
+              </Button>
+            </div>
+          </div>
+          <BlockBody block={block} onChange={(patch) => updateBlock(i, patch)} />
+        </div>
+      ))}
 
-      <OptionalGroup
-        label="Include a link"
-        present={!!section.link}
-        onToggle={(on) => set({ link: on ? { text: "", url: "" } : undefined })}
-      >
-        <Input
-          id="link-text"
-          label="Link text"
-          value={section.link?.text || ""}
-          onChange={(e) => set({ link: { ...section.link, text: e.target.value } })}
-        />
-        <Input
-          id="link-url"
-          label="URL"
-          value={section.link?.url || ""}
-          onChange={(e) => set({ link: { ...section.link, url: e.target.value } })}
-        />
-      </OptionalGroup>
+      <div className="editor__add-bar">
+        <span className="editor__small-label">Add block:</span>
+        {BLOCK_TYPES.map((t) => (
+          <Button
+            key={t.id}
+            type="button"
+            variant="secondary"
+            className="btn--tiny"
+            onClick={() => addBlock(t.id)}
+          >
+            + {t.label}
+          </Button>
+        ))}
+      </div>
 
-      <OptionalGroup
-        label="Include an image"
-        present={!!section.image}
-        onToggle={(on) => set({ image: on ? { src: "", alt: "" } : undefined })}
-      >
-        <ImageField
-          image={section.image}
-          onChange={(img) => set({ image: img })}
-        />
-        <StringList
-          label="Text below the image (optional)"
-          values={section.bodyBelow || []}
-          onChange={(bodyBelow) => set({ bodyBelow })}
-          placeholder="A caption or paragraph that appears under the image."
-          rich
-        />
-      </OptionalGroup>
-
-      <OptionalGroup
-        label="Include a YouTube video"
-        present={!!section.media}
-        onToggle={(on) =>
-          set({ media: on ? { type: "youtube", embedId: "", title: "" } : undefined })
-        }
-      >
-        <Input
-          id="media-embed"
-          label="YouTube video ID"
-          hint="The part after watch?v= — e.g. dQw4w9WgXcQ"
-          value={section.media?.embedId || ""}
-          onChange={(e) =>
-            set({ media: { ...section.media, type: "youtube", embedId: e.target.value } })
-          }
-        />
-        <Input
-          id="media-title"
-          label="Title"
-          value={section.media?.title || ""}
-          onChange={(e) => set({ media: { ...section.media, title: e.target.value } })}
-        />
-      </OptionalGroup>
+      <ContentPreview section={{ ...section, blocks }} />
     </>
   );
 }

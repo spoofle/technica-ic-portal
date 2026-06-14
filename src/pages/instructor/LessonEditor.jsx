@@ -24,7 +24,13 @@ function blankSection(type) {
       return { id, type, label: "Exercise", heading: "", goal: "", difficulty: "", difficultyTone: "mint", tasks: [], stuckPrompt: "" };
     case "content":
     default:
-      return { id, type: "content", label: "Learn", heading: "", body: [""] };
+      return {
+        id,
+        type: "content",
+        label: "Learn",
+        heading: "",
+        blocks: [{ type: "text", html: "" }],
+      };
   }
 }
 

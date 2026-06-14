@@ -1,19 +1,71 @@
 import "./ContentSection.css";
 
-// Renders a "content" section: heading, paragraphs, image, embedded media,
-// code block, and an external link. Shared by the student LessonPage and the
-// instructor editor's live preview so both look identical.
+// Renders a "content" section. Newer sections use an ordered `blocks` array so
+// instructors can mix text, images, code, links, and video in any order. Older
+// sections (seeded before blocks existed) use the fixed fields body/image/etc.,
+// which we still render for backward compatibility.
 //
-// Body paragraphs may contain inline <code>/<strong>/<em>/<a> from the lesson
-// data. That content is author-controlled (written by instructors in the
-// editor), so rendering it as HTML is intentional here.
+// Text/code/link content is author-controlled (written by instructors in the
+// editor), so rendering inline HTML in text blocks is intentional here.
 export default function ContentSection({ section }) {
+  const blocks = Array.isArray(section.blocks) ? section.blocks : null;
+
   return (
     <article className="content-section">
       {section.heading && <h2>{section.heading}</h2>}
+      {blocks ? blocks.map(renderBlock) : renderLegacy(section)}
+    </article>
+  );
+}
 
+function renderBlock(block, i) {
+  switch (block?.type) {
+    case "text":
+      return block.html ? (
+        <p key={i} dangerouslySetInnerHTML={{ __html: block.html }} />
+      ) : null;
+    case "image":
+      return block.src ? (
+        <figure key={i} className="content-section__figure">
+          <img src={block.src} alt={block.alt || ""} loading="lazy" />
+        </figure>
+      ) : null;
+    case "code":
+      return block.content ? (
+        <pre key={i} className="content-section__code">
+          <code>{block.content}</code>
+        </pre>
+      ) : null;
+    case "link":
+      return block.url ? (
+        <p key={i} className="content-section__link">
+          <a href={block.url} target="_blank" rel="noreferrer">
+            {block.text || block.url} ↗
+          </a>
+        </p>
+      ) : null;
+    case "video":
+      return block.embedId ? (
+        <div key={i} className="content-section__media">
+          <iframe
+            src={`https://www.youtube.com/embed/${block.embedId}`}
+            title={block.title || "Video"}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        </div>
+      ) : null;
+    default:
+      return null;
+  }
+}
+
+// Legacy fixed-order rendering for sections created before the block model.
+function renderLegacy(section) {
+  return (
+    <>
       {section.body?.map((para, i) => (
-        <p key={i} dangerouslySetInnerHTML={{ __html: para }} />
+        <p key={`b-${i}`} dangerouslySetInnerHTML={{ __html: para }} />
       ))}
 
       {section.image && (
@@ -22,9 +74,8 @@ export default function ContentSection({ section }) {
         </figure>
       )}
 
-      {/* Optional paragraphs that appear BELOW the image. */}
       {section.bodyBelow?.map((para, i) => (
-        <p key={`below-${i}`} dangerouslySetInnerHTML={{ __html: para }} />
+        <p key={`a-${i}`} dangerouslySetInnerHTML={{ __html: para }} />
       ))}
 
       {section.media?.type === "youtube" && (
@@ -51,6 +102,6 @@ export default function ContentSection({ section }) {
           </a>
         </p>
       )}
-    </article>
+    </>
   );
 }
