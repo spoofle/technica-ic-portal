@@ -21,6 +21,20 @@ export function isLessonComplete(lesson, completedMap = {}) {
   return graded.length > 0 && graded.every((s) => completedMap[s.id]);
 }
 
+// Whether a lesson is "done" for a student, given their full progress doc.
+// Lessons with graded sections need all of them complete. Content-only lessons
+// (no quizzes/exercises) count as done once the student reaches the last
+// section (tracked via currentSection).
+export function isLessonDone(lesson, progress) {
+  const graded = gradedSections(lesson);
+  if (graded.length > 0) {
+    const completedMap = progress?.completedSections || {};
+    return graded.every((s) => completedMap[s.id]);
+  }
+  const total = lesson?.sections?.length || 0;
+  return total > 0 && (progress?.currentSection ?? 0) >= total - 1;
+}
+
 // Returns { done, total, ratio } over the graded sections (0..1).
 export function completionRatio(lesson, completedMap = {}) {
   const graded = gradedSections(lesson);

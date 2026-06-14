@@ -146,6 +146,10 @@
 .badge--coral { background-color: var(--color-coral-soft); }
 .badge--sun { background-color: var(--color-sun-soft); }
 .badge--purple { background-color: var(--color-primary-soft); }
+.badge--done {
+  background-color: var(--color-success-soft);
+  color: var(--color-success);
+}
 
 /* ---------- Inline alert ---------- */
 .alert {
