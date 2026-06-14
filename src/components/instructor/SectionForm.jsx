@@ -91,6 +91,7 @@ function ContentPreview({ section }) {
   const hasContent =
     section.heading ||
     section.body?.some((p) => p.trim()) ||
+    section.bodyBelow?.some((p) => p.trim()) ||
     section.code ||
     section.link ||
     section.image ||
@@ -184,6 +185,13 @@ function ContentForm({ section, set }) {
         <ImageField
           image={section.image}
           onChange={(img) => set({ image: img })}
+        />
+        <StringList
+          label="Text below the image (optional)"
+          values={section.bodyBelow || []}
+          onChange={(bodyBelow) => set({ bodyBelow })}
+          placeholder="A caption or paragraph that appears under the image."
+          rich
         />
       </OptionalGroup>
 

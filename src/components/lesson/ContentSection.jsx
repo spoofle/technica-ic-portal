@@ -22,6 +22,11 @@ export default function ContentSection({ section }) {
         </figure>
       )}
 
+      {/* Optional paragraphs that appear BELOW the image. */}
+      {section.bodyBelow?.map((para, i) => (
+        <p key={`below-${i}`} dangerouslySetInnerHTML={{ __html: para }} />
+      ))}
+
       {section.media?.type === "youtube" && (
         <div className="content-section__media">
           <iframe
