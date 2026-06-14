@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useLessons } from "../context/LessonsContext";
 import { useLessonProgress } from "../hooks/useLessonProgress";
@@ -21,16 +21,21 @@ export default function LessonPage() {
   const {
     answers,
     completed,
+    currentSection,
     loading,
     loadError,
     saveStatus,
     saveError,
     lastSavedAt,
     updateDraft,
+    setCurrentSection,
     save,
     flush,
   } = useLessonProgress(lessonId);
-  const [stepIndex, setStepIndex] = useState(0);
+  // The current section is owned by the progress hook (so it persists and a
+  // refresh resumes here). `setStepIndex` updates + saves that position.
+  const stepIndex = currentSection;
+  const setStepIndex = setCurrentSection;
 
   // Auto-save when leaving the lesson (navigating away or logging out), so a
   // student never loses work just by clicking elsewhere. `flush` reads the
@@ -48,15 +53,6 @@ export default function LessonPage() {
     return () =>
       window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [flush]);
-
-  // Reset to the first section whenever the lesson changes. Adjusting state
-  // during render (instead of in an effect) avoids an extra render pass.
-  const [prevLessonId, setPrevLessonId] = useState(lessonId);
-  const lessonChanged = lessonId !== prevLessonId;
-  if (lessonChanged) {
-    setPrevLessonId(lessonId);
-    setStepIndex(0);
-  }
 
   // While lessons are still loading, don't flash "not found".
   if (lessonsLoading && !lesson) {
@@ -77,13 +73,10 @@ export default function LessonPage() {
   }
 
   const sections = lesson.sections;
-  // When the lesson just changed, stepIndex still holds the PREVIOUS lesson's
-  // value for this render (the reset above is queued, not applied yet). The new
-  // lesson may have fewer sections, so clamp to avoid reading an undefined
-  // section and crashing. Also guards any stray out-of-range index.
-  const safeStep = lessonChanged
-    ? 0
-    : Math.min(Math.max(stepIndex, 0), sections.length - 1);
+  // The saved section index may briefly belong to a previous lesson (while the
+  // new lesson's progress loads) or exceed this lesson's length, so clamp it to
+  // avoid reading an undefined section and crashing.
+  const safeStep = Math.min(Math.max(stepIndex, 0), sections.length - 1);
   const section = sections[safeStep];
   const steps = sections.map((s) => ({ id: s.id, label: s.label }));
 
@@ -244,7 +237,7 @@ export default function LessonPage() {
       <nav className="lesson__nav" aria-label="Lesson sections">
         <Button
           variant="secondary"
-          onClick={() => setStepIndex((i) => Math.max(0, i - 1))}
+          onClick={() => setStepIndex(Math.max(0, safeStep - 1))}
           disabled={isFirst}
         >
           ← Back
@@ -252,7 +245,7 @@ export default function LessonPage() {
 
         {!isLast ? (
           <Button
-            onClick={() => setStepIndex((i) => i + 1)}
+            onClick={() => setStepIndex(safeStep + 1)}
             disabled={locked}
             title={locked ? lockReason(section) : undefined}
           >

@@ -35,6 +35,9 @@ export function useLessonProgress(lessonId) {
   const { currentUser } = useAuth();
   const [completed, setCompleted] = useState({});
   const [answers, setAnswers] = useState({});
+  // The section the student is currently on, so a refresh resumes here instead
+  // of jumping back to the intro.
+  const [currentSection, setCurrentSectionState] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
 
@@ -47,10 +50,10 @@ export function useLessonProgress(lessonId) {
 
   // Keep a live mirror of the latest state in a ref so the auto-save on
   // unmount/logout can read the newest values without stale closures.
-  const latest = useRef({ completed: {}, answers: {} });
+  const latest = useRef({ completed: {}, answers: {}, currentSection: 0 });
   useEffect(() => {
-    latest.current = { completed, answers };
-  }, [completed, answers]);
+    latest.current = { completed, answers, currentSection };
+  }, [completed, answers, currentSection]);
 
   function docRefFor(userId) {
     return userId ? doc(db, "users", userId, "progress", lessonId) : null;
@@ -65,6 +68,7 @@ export function useLessonProgress(lessonId) {
         // No signed-in user (e.g. preview mode) — nothing to load.
         setCompleted({});
         setAnswers({});
+        setCurrentSectionState(0);
         setSaveStatus("idle");
         setLoading(false);
         return;
@@ -77,9 +81,13 @@ export function useLessonProgress(lessonId) {
           const data = snap.data();
           setCompleted(data.completedSections || {});
           setAnswers(data.answers || {});
+          setCurrentSectionState(
+            Number.isInteger(data.currentSection) ? data.currentSection : 0
+          );
         } else if (active) {
           setCompleted({});
           setAnswers({});
+          setCurrentSectionState(0);
         }
         if (active) {
           setSaveStatus("idle");
@@ -116,6 +124,12 @@ export function useLessonProgress(lessonId) {
     setSaveStatus("unsaved");
   }, []);
 
+  // ---- Remember which section the student is on (for resume-on-refresh) ----
+  const setCurrentSection = useCallback((index) => {
+    setCurrentSectionState(index);
+    setSaveStatus("unsaved");
+  }, []);
+
   // ---- Persist the whole lesson to Firestore ----
   // Returns true on success, false on failure. Accepts optional overrides so
   // the unmount flush can pass the very latest ref values.
@@ -137,6 +151,8 @@ export function useLessonProgress(lessonId) {
             lessonId,
             completedSections: data.completed ?? data.completedSections ?? {},
             answers: data.answers ?? {},
+            currentSection:
+              data.currentSection ?? latest.current.currentSection ?? 0,
             updatedAt: serverTimestamp(),
           },
           { merge: true }
@@ -166,21 +182,35 @@ export function useLessonProgress(lessonId) {
 
   // Expose a flush that reads the freshest ref state — used on page leave.
   const flush = useCallback(() => {
-    const { completed: c, answers: a } = latest.current;
-    // Only write if there's something to save.
-    if (Object.keys(a).length === 0) return;
-    save({ completed: c, answers: a });
+    const { completed: c, answers: a, currentSection: cs } = latest.current;
+    // Write if there's any answer OR a non-intro position to remember.
+    if (Object.keys(a).length === 0 && !cs) return;
+    save({ completed: c, answers: a, currentSection: cs });
   }, [save]);
+
+  // ---- Autosave ----
+  // Whenever there are unsaved changes, persist them after a short idle delay
+  // so progress survives a refresh without the student clicking "Save". The
+  // debounce coalesces rapid edits (typing, clicking through sections).
+  useEffect(() => {
+    if (saveStatus !== "unsaved" || !uid) return;
+    const t = setTimeout(() => {
+      save();
+    }, 1200);
+    return () => clearTimeout(t);
+  }, [saveStatus, uid, save, answers, completed, currentSection]);
 
   return {
     completed,
     answers,
+    currentSection,
     loading,
     loadError,
     saveStatus,
     saveError,
     lastSavedAt,
     updateDraft,
+    setCurrentSection,
     save,
     flush,
   };
