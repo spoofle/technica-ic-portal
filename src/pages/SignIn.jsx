@@ -60,6 +60,9 @@ export default function SignIn() {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+            <p className="auth__forgot">
+              <Link to="/forgot-password">Forgot password?</Link>
+            </p>
             <Button type="submit" block size="lg" disabled={busy}>
               {busy ? "Signing in…" : "Sign in"}
             </Button>

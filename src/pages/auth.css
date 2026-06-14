@@ -93,6 +93,46 @@
   text-align: center;
   color: var(--color-text-soft);
 }
+.auth__forgot {
+  margin: calc(-1 * var(--space-2)) 0 var(--space-4);
+  text-align: right;
+  font-size: var(--text-sm);
+}
+
+/* Role selector (Student / Instructor) on the sign-up form */
+.role-select {
+  border: none;
+  padding: 0;
+  margin: 0 0 var(--space-4);
+}
+.role-select__options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+.role-option {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-3);
+  border: 2px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.role-option:hover { border-color: var(--color-primary); }
+.role-option--active {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-soft);
+}
+/* Hide the native radio; the whole card is the control. */
+.role-option input { position: absolute; opacity: 0; pointer-events: none; }
+.role-option__title { font-weight: 700; }
+.role-option__sub {
+  font-size: var(--text-sm, 0.85rem);
+  color: var(--color-text-soft);
+}
 
 @media (max-width: 860px) {
   .auth { grid-template-columns: 1fr; }

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { getModules } from "../data/lessons";
+import { useLessons } from "../context/LessonsContext";
 import { useAuth } from "../context/AuthContext";
 import Card from "../components/ui/Card";
 import DeadlineBadge from "../components/DeadlineBadge";
@@ -7,10 +7,9 @@ import "./Dashboard.css";
 
 export default function Dashboard() {
   const { currentUser } = useAuth();
+  const { modules, loading, error } = useLessons();
   const name =
     currentUser?.displayName || currentUser?.email?.split("@")[0] || "friend";
-
-  const modules = getModules();
 
   return (
     <div className="dashboard">
@@ -23,6 +22,20 @@ export default function Dashboard() {
           an eye on the deadline badges.
         </p>
       </section>
+
+      {loading && <p className="dashboard__status">Loading your lessons…</p>}
+
+      {!loading && error && (
+        <div className="alert alert--error" role="alert">
+          {error}
+        </div>
+      )}
+
+      {!loading && !error && modules.length === 0 && (
+        <p className="dashboard__status">
+          No lessons are available yet. Check back soon! 🌼
+        </p>
+      )}
 
       {modules.map((mod) => (
         <section key={mod.name} className="dashboard__module">

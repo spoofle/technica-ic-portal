@@ -9,11 +9,19 @@ export default function MultipleChoice({ section, savedValue, onComplete }) {
   const [checked, setChecked] = useState(Boolean(savedValue));
 
   const isCorrect = selected === section.correctOptionId;
+  // Lock the options only once the RIGHT answer is in. A wrong answer stays
+  // editable so the student can try again (they can't advance until correct).
+  const locked = checked && isCorrect;
 
   function handleCheck() {
     if (selected == null) return;
     setChecked(true);
     onComplete?.({ selected, isCorrect });
+  }
+
+  function handleTryAgain() {
+    setChecked(false);
+    setSelected(null);
   }
 
   return (
@@ -28,7 +36,9 @@ export default function MultipleChoice({ section, savedValue, onComplete }) {
           let stateClass = "";
           if (checked && isThis) {
             stateClass = isCorrect ? "choice--correct" : "choice--wrong";
-          } else if (checked && opt.id === section.correctOptionId) {
+          } else if (locked && opt.id === section.correctOptionId) {
+            // Only reveal the correct option once they've answered correctly,
+            // so a wrong attempt doesn't give away the answer before retrying.
             stateClass = "choice--correct";
           }
           return (
@@ -38,7 +48,7 @@ export default function MultipleChoice({ section, savedValue, onComplete }) {
                 name={section.id}
                 value={opt.id}
                 checked={isThis}
-                disabled={checked}
+                disabled={locked}
                 onChange={() => setSelected(opt.id)}
               />
               <span className="choice__marker" aria-hidden="true" />
@@ -53,15 +63,20 @@ export default function MultipleChoice({ section, savedValue, onComplete }) {
           Check my answer
         </Button>
       ) : (
-        <div
-          className={`exercise__feedback ${
-            isCorrect ? "exercise__feedback--good" : "exercise__feedback--try"
-          }`}
-          role="status"
-        >
-          <strong>{isCorrect ? "Nice work! 🎉" : "Good try!"}</strong>
-          <p>{section.explanation}</p>
-        </div>
+        <>
+          <div
+            className={`exercise__feedback ${
+              isCorrect ? "exercise__feedback--good" : "exercise__feedback--try"
+            }`}
+            role="status"
+          >
+            <strong>{isCorrect ? "Nice work! 🎉" : "Not quite — give it another go!"}</strong>
+            {isCorrect && <p>{section.explanation}</p>}
+          </div>
+          {!isCorrect && (
+            <Button onClick={handleTryAgain}>Try again</Button>
+          )}
+        </>
       )}
     </div>
   );

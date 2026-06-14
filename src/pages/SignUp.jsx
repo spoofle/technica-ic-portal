@@ -14,6 +14,8 @@ export default function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [role, setRole] = useState("student");
+  const [inviteCode, setInviteCode] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -30,9 +32,21 @@ export default function SignUp() {
       return;
     }
 
+    // Instructor accounts require a valid invite code. This is a friendly gate,
+    // not real security — the Firestore rules are what actually protect data.
+    if (role === "instructor") {
+      const expected = import.meta.env.VITE_INSTRUCTOR_INVITE_CODE;
+      if (!expected || inviteCode.trim() !== expected) {
+        setError(
+          "That instructor invite code isn't valid. Leave it blank to join as a student."
+        );
+        return;
+      }
+    }
+
     setBusy(true);
     try {
-      await signup(email, password, name);
+      await signup(email, password, name, role);
       navigate("/", { replace: true });
     } catch (err) {
       console.error("Sign-up failed:", err.code, err.message);
@@ -90,6 +104,55 @@ export default function SignUp() {
               onChange={(e) => setConfirm(e.target.value)}
               required
             />
+            <fieldset className="role-select">
+              <legend className="field__label">I'm joining as a…</legend>
+              <div className="role-select__options">
+                <label
+                  className={`role-option ${
+                    role === "student" ? "role-option--active" : ""
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="role"
+                    value="student"
+                    checked={role === "student"}
+                    onChange={() => setRole("student")}
+                  />
+                  <span className="role-option__title">🎒 Student</span>
+                  <span className="role-option__sub">Work through the lessons</span>
+                </label>
+                <label
+                  className={`role-option ${
+                    role === "instructor" ? "role-option--active" : ""
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="role"
+                    value="instructor"
+                    checked={role === "instructor"}
+                    onChange={() => setRole("instructor")}
+                  />
+                  <span className="role-option__title">🧑‍🏫 Instructor</span>
+                  <span className="role-option__sub">Teach &amp; track progress</span>
+                </label>
+              </div>
+            </fieldset>
+
+            {role === "instructor" && (
+              <Input
+                id="inviteCode"
+                label="Instructor invite code"
+                type="text"
+                autoComplete="off"
+                hint="Ask your program lead for the code. Leave Student selected if you don't have one."
+                value={inviteCode}
+                onChange={(e) => setInviteCode(e.target.value)}
+                required
+              />
+            )}
+
             <Button type="submit" block size="lg" disabled={busy}>
               {busy ? "Creating account…" : "Create account"}
             </Button>

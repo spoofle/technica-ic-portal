@@ -6,6 +6,13 @@
   gap: var(--space-6);
 }
 
+.dashboard__status {
+  color: var(--color-text-soft);
+  font-size: var(--text-lg);
+  text-align: center;
+  padding: var(--space-6);
+}
+
 .dashboard__hero {
   background: linear-gradient(135deg, var(--color-primary-soft), var(--color-mint-soft));
   border-radius: var(--radius-lg);

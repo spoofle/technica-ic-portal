@@ -1,69 +1,22 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { getLesson, lessons } from "../data/lessons";
+import { useLessons } from "../context/LessonsContext";
 import { useLessonProgress } from "../hooks/useLessonProgress";
 import ProgressIndicator from "../components/ProgressIndicator";
 import DeadlineBadge from "../components/DeadlineBadge";
 import SaveBar from "../components/SaveBar";
 import Button from "../components/ui/Button";
+import ContentSection from "../components/lesson/ContentSection";
 import MultipleChoice from "../components/exercises/MultipleChoice";
 import Reflection from "../components/exercises/Reflection";
 import DragAndDrop from "../components/exercises/DragAndDrop";
 import CodingExercise from "../components/exercises/CodingExercise";
 import "./LessonPage.css";
 
-// Renders a "content" section: heading, paragraphs, image, embedded media.
-function ContentSection({ section }) {
-  return (
-    <article className="content-section">
-      <h2>{section.heading}</h2>
-      {/* Body paragraphs may contain inline <code>/<strong>/<em> from the
-          lesson data (author-controlled content, so HTML is safe here). */}
-      {section.body?.map((para, i) => (
-        <p key={i} dangerouslySetInnerHTML={{ __html: para }} />
-      ))}
-
-      {section.image && (
-        <figure className="content-section__figure">
-          <img
-            src={section.image.src}
-            alt={section.image.alt}
-            loading="lazy"
-          />
-        </figure>
-      )}
-
-      {section.media?.type === "youtube" && (
-        <div className="content-section__media">
-          <iframe
-            src={`https://www.youtube.com/embed/${section.media.embedId}`}
-            title={section.media.title}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        </div>
-      )}
-
-      {section.code && (
-        <pre className="content-section__code">
-          <code>{section.code.content}</code>
-        </pre>
-      )}
-
-      {section.link && (
-        <p className="content-section__link">
-          <a href={section.link.url} target="_blank" rel="noreferrer">
-            {section.link.text} ↗
-          </a>
-        </p>
-      )}
-    </article>
-  );
-}
-
 export default function LessonPage() {
   const { lessonId } = useParams();
   const navigate = useNavigate();
+  const { getLesson, lessons, loading: lessonsLoading } = useLessons();
   const lesson = getLesson(lessonId);
   const {
     answers,
@@ -99,9 +52,19 @@ export default function LessonPage() {
   // Reset to the first section whenever the lesson changes. Adjusting state
   // during render (instead of in an effect) avoids an extra render pass.
   const [prevLessonId, setPrevLessonId] = useState(lessonId);
-  if (lessonId !== prevLessonId) {
+  const lessonChanged = lessonId !== prevLessonId;
+  if (lessonChanged) {
     setPrevLessonId(lessonId);
     setStepIndex(0);
+  }
+
+  // While lessons are still loading, don't flash "not found".
+  if (lessonsLoading && !lesson) {
+    return (
+      <div className="lesson lesson--missing">
+        <p className="lesson__loading">Loading lesson…</p>
+      </div>
+    );
   }
 
   if (!lesson) {
@@ -114,7 +77,14 @@ export default function LessonPage() {
   }
 
   const sections = lesson.sections;
-  const section = sections[stepIndex];
+  // When the lesson just changed, stepIndex still holds the PREVIOUS lesson's
+  // value for this render (the reset above is queued, not applied yet). The new
+  // lesson may have fewer sections, so clamp to avoid reading an undefined
+  // section and crashing. Also guards any stray out-of-range index.
+  const safeStep = lessonChanged
+    ? 0
+    : Math.min(Math.max(stepIndex, 0), sections.length - 1);
+  const section = sections[safeStep];
   const steps = sections.map((s) => ({ id: s.id, label: s.label }));
 
   // A lesson counts as complete once every interactive section is done.
@@ -171,8 +141,8 @@ export default function LessonPage() {
     }
   }
 
-  const isFirst = stepIndex === 0;
-  const isLast = stepIndex === sections.length - 1;
+  const isFirst = safeStep === 0;
+  const isLast = safeStep === sections.length - 1;
 
   // Find the next lesson for the "finish" hand-off.
   const lessonIndex = lessons.findIndex((l) => l.id === lessonId);
@@ -236,7 +206,7 @@ export default function LessonPage() {
         )}
       </header>
 
-      <ProgressIndicator steps={steps} currentIndex={stepIndex} />
+      <ProgressIndicator steps={steps} currentIndex={safeStep} />
 
       {loadError && (
         <div className="alert alert--error" role="alert">

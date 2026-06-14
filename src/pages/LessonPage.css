@@ -33,81 +33,12 @@
   margin: 0;
 }
 
-/* ---- Content section ---- */
-.content-section h2 { margin-top: 0; }
-.content-section__figure {
-  margin: var(--space-5) 0;
-}
-.content-section__figure img {
-  width: 100%;
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-}
-.content-section__media {
-  position: relative;
-  padding-top: 56.25%; /* 16:9 */
-  margin: var(--space-5) 0;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-}
-.content-section__media iframe {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
-/* ---- Code examples (HTML / CSS lessons) ---- */
-.content-section__code {
-  background-color: #2b2540;
-  color: #f5f1fa;
-  border-radius: var(--radius-md);
-  padding: var(--space-4) var(--space-5);
-  overflow-x: auto;
-  margin: var(--space-5) 0;
-  box-shadow: var(--shadow-sm);
-}
-.content-section__code code {
-  font-family: "SF Mono", "Fira Code", Menlo, Consolas, monospace;
-  font-size: 0.95rem;
-  line-height: 1.6;
-  white-space: pre;
-}
+/* Content-section styles live with the shared component:
+   src/components/lesson/ContentSection.css */
 
 /* Give the deadline badge some breathing room under the summary */
 .lesson__header .deadline {
   margin-top: var(--space-3);
-}
-
-/* External resource link inside a content section */
-.content-section__link {
-  margin: var(--space-4) 0 0;
-}
-.content-section__link a {
-  display: inline-block;
-  background-color: var(--color-primary-soft);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md);
-  font-weight: 700;
-  transition: background-color var(--transition);
-}
-.content-section__link a:hover {
-  background-color: var(--color-primary);
-  color: var(--color-text-on-primary);
-  text-decoration: none;
-}
-
-/* Inline code references inside paragraphs */
-.content-section p code,
-.content-section li code {
-  background-color: var(--color-surface-alt);
-  padding: 1px 6px;
-  border-radius: var(--radius-sm);
-  font-family: "SF Mono", "Fira Code", Menlo, Consolas, monospace;
-  font-size: 0.9em;
-  color: var(--color-primary-active);
 }
 
 /* ---- Section navigation ---- */

@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { getModules } from "../../data/lessons";
+import { useLessons } from "../../context/LessonsContext";
 import { useAuth } from "../../context/AuthContext";
 import "./AppLayout.css";
 
 // Main authenticated layout: sidebar (lesson nav) + top bar + page content.
 export default function AppLayout() {
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout, isInstructor } = useAuth();
+  const { modules, loading } = useLessons();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -18,8 +19,6 @@ export default function AppLayout() {
   const displayName =
     currentUser?.displayName || currentUser?.email?.split("@")[0] || "friend";
   const initial = displayName.charAt(0).toUpperCase();
-
-  const modules = getModules();
 
   return (
     <div className="layout">
@@ -43,6 +42,61 @@ export default function AppLayout() {
         </div>
 
         <nav className="sidebar__nav">
+          {isInstructor && (
+            <div className="sidebar__group">
+              <p className="sidebar__heading">Instructor</p>
+              <ul>
+                <li>
+                  <NavLink
+                    to="/students"
+                    className={({ isActive }) =>
+                      `sidebar__link ${isActive ? "sidebar__link--active" : ""}`
+                    }
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <span className="sidebar__link-text">👥 Students</span>
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/manage"
+                    className={({ isActive }) =>
+                      `sidebar__link ${isActive ? "sidebar__link--active" : ""}`
+                    }
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <span className="sidebar__link-text">✏️ Manage lessons</span>
+                  </NavLink>
+                </li>
+              </ul>
+            </div>
+          )}
+
+          {!isInstructor && (
+            <div className="sidebar__group">
+              <p className="sidebar__heading">My space</p>
+              <ul>
+                <li>
+                  <NavLink
+                    to="/journal"
+                    className={({ isActive }) =>
+                      `sidebar__link ${isActive ? "sidebar__link--active" : ""}`
+                    }
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <span className="sidebar__link-text">📔 My Journal</span>
+                  </NavLink>
+                </li>
+              </ul>
+            </div>
+          )}
+
+          {loading && (
+            <p className="sidebar__heading" style={{ opacity: 0.7 }}>
+              Loading lessons…
+            </p>
+          )}
+
           {modules.map((mod) => (
             <div key={mod.name} className="sidebar__group">
               <p className="sidebar__heading">{mod.name}</p>
@@ -109,6 +163,13 @@ export default function AppLayout() {
               {initial}
             </span>
             <span className="topbar__name">Hi, {displayName}!</span>
+            <span
+              className={`role-badge role-badge--${
+                isInstructor ? "instructor" : "student"
+              }`}
+            >
+              {isInstructor ? "Instructor" : "Student"}
+            </span>
             <button className="topbar__logout" onClick={handleLogout}>
               Log out
             </button>

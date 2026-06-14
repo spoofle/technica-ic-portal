@@ -1,0 +1,108 @@
+.journal {
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.journal__hero {
+  background: linear-gradient(135deg, var(--color-coral-soft), var(--color-primary-soft));
+  border-radius: var(--radius-lg);
+  padding: var(--space-8) var(--space-6);
+}
+.journal__hero h1 { margin: var(--space-3) 0; }
+.journal__hero p {
+  margin: 0;
+  font-size: var(--text-lg);
+  color: var(--color-text-soft);
+  max-width: 52ch;
+}
+
+.journal__status {
+  color: var(--color-text-soft);
+  font-size: var(--text-lg);
+  text-align: center;
+  padding: var(--space-6);
+}
+
+/* Filter chips */
+.journal__filters {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.journal__chip {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  cursor: pointer;
+  font-weight: 700;
+  font-size: var(--text-sm);
+  color: var(--color-text-soft);
+  transition: background-color var(--transition), color var(--transition), border-color var(--transition);
+}
+.journal__chip:hover { border-color: var(--color-primary); }
+.journal__chip--active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-text-on-primary);
+}
+
+.journal__entry {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.journal__entry-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.journal__kind {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: var(--text-xs);
+  font-weight: 800;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+}
+.journal__kind--reflection { background: var(--color-coral-soft); color: var(--color-error); }
+.journal__kind--quiz { background: var(--color-primary-soft); color: var(--color-primary); }
+.journal__kind--coding { background: var(--color-mint-soft); color: var(--color-success); }
+.journal__entry-lesson {
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--color-text-soft);
+}
+.journal__entry-lesson:hover { color: var(--color-primary); }
+.journal__date {
+  margin-left: auto;
+  font-size: var(--text-sm);
+  color: var(--color-text-soft);
+}
+.journal__prompt {
+  margin: 0;
+  font-weight: 700;
+}
+.journal__quiz { margin: 0; }
+.journal__answer {
+  display: inline-block;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-weight: 700;
+}
+.journal__answer.is-correct { background: var(--color-success-soft); color: var(--color-success); }
+.journal__answer.is-wrong { background: var(--color-error-soft); color: var(--color-error); }
+.journal__tasks { color: var(--color-text-soft); font-weight: 700; }
+.journal__text {
+  margin: 0;
+  white-space: pre-wrap;
+  color: var(--color-text);
+  line-height: var(--leading-relaxed);
+  background: var(--color-surface-alt);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}

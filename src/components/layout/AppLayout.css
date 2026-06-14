@@ -226,3 +226,21 @@
   }
   .topbar__name { display: none; }
 }
+
+/* ---------- Role badge in the top bar ---------- */
+.role-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm, 0.78rem);
+  font-weight: 700;
+  line-height: 1.6;
+}
+.role-badge--instructor {
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+.role-badge--student {
+  background-color: var(--color-mint-soft);
+  color: var(--color-mint-strong, #0f766e);
+}

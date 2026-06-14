@@ -102,9 +102,16 @@ export function useLessonProgress(lessonId) {
   }, [lessonId, uid]);
 
   // ---- Update a single section's answer in local draft state ----
-  // Marks the section complete and flags that there are unsaved changes.
+  // Marks the section complete and flags that there are unsaved changes. We
+  // stamp each answer with the time it was last changed (client clock) so the
+  // journal can show a per-entry date. All exercise answers are objects, so the
+  // stamp rides along without disturbing the existing answer shapes.
   const updateDraft = useCallback((sectionId, answer) => {
-    setAnswers((prev) => ({ ...prev, [sectionId]: answer }));
+    const stamped =
+      answer && typeof answer === "object"
+        ? { ...answer, savedAt: new Date().toISOString() }
+        : answer;
+    setAnswers((prev) => ({ ...prev, [sectionId]: stamped }));
     setCompleted((prev) => ({ ...prev, [sectionId]: true }));
     setSaveStatus("unsaved");
   }, []);
