@@ -163,3 +163,7 @@
   background-color: var(--color-success-soft);
   color: var(--color-success);
 }
+.alert--warn {
+  background-color: var(--color-sun-soft);
+  color: #9a6a12;
+}

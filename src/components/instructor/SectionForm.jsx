@@ -1,6 +1,7 @@
 import Input from "../ui/Input";
 import Button from "../ui/Button";
 import RichTextField from "./RichTextField";
+import ImageField from "./ImageField";
 import ContentSection from "../lesson/ContentSection";
 
 // =========================================================================
@@ -180,17 +181,9 @@ function ContentForm({ section, set }) {
         present={!!section.image}
         onToggle={(on) => set({ image: on ? { src: "", alt: "" } : undefined })}
       >
-        <Input
-          id="image-src"
-          label="Image URL"
-          value={section.image?.src || ""}
-          onChange={(e) => set({ image: { ...section.image, src: e.target.value } })}
-        />
-        <Input
-          id="image-alt"
-          label="Alt text"
-          value={section.image?.alt || ""}
-          onChange={(e) => set({ image: { ...section.image, alt: e.target.value } })}
+        <ImageField
+          image={section.image}
+          onChange={(img) => set({ image: img })}
         />
       </OptionalGroup>
 
