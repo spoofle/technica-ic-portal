@@ -82,8 +82,8 @@ export default function CodingExercise({ section, savedValue, onComplete }) {
           id={`${section.id}-link`}
           label="Your project link"
           type="url"
-          placeholder="https://codverter.com/src/webeditor?query=…"
-          hint="Paste the link to your CodVerter project to submit this exercise."
+          placeholder="Paste the project url here"
+          // hint="Paste the link to your project to submit this exercise."
           value={link}
           onChange={handleLinkChange}
         />
