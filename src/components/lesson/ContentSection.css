@@ -62,9 +62,25 @@
   text-decoration: none;
 }
 
+/* Text blocks: spacing like a paragraph, and proper lists */
+.content-section__text {
+  margin: 0 0 var(--space-4);
+  line-height: var(--leading-relaxed);
+}
+.content-section__text:last-child { margin-bottom: 0; }
+.content-section__text ul,
+.content-section__text ol {
+  margin: var(--space-2) 0;
+  padding-left: 1.5em;
+}
+.content-section__text ul { list-style: disc; }
+.content-section__text ol { list-style: decimal; }
+.content-section__text li { margin: var(--space-1) 0; }
+
 /* Inline code references inside paragraphs */
 .content-section p code,
-.content-section li code {
+.content-section li code,
+.content-section__text code {
   background-color: var(--color-surface-alt);
   padding: 1px 6px;
   border-radius: var(--radius-sm);

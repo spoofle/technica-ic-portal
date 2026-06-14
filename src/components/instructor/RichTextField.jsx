@@ -51,6 +51,29 @@ export default function RichTextField({
     wrap(`<a href="${url}" target="_blank">`, "</a>");
   }
 
+  // Turn the selected lines into a list (one <li> per line). With no selection,
+  // insert an empty one-item list to type into.
+  function makeList(tag) {
+    const el = ref.current;
+    if (!el) return;
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const selected = value.slice(start, end);
+    const lines = selected
+      ? selected.split(/\r?\n/).map((l) => l.trim()).filter(Boolean)
+      : [""];
+    const items = lines.map((l) => `  <li>${l}</li>`).join("\n");
+    const listHtml = `<${tag}>\n${items}\n</${tag}>`;
+    const next = value.slice(0, start) + listHtml + value.slice(end);
+    onChange(next);
+    requestAnimationFrame(() => {
+      el.focus();
+      // Put the cursor inside the first <li>.
+      const pos = value.slice(0, start).length + listHtml.indexOf("<li>") + 4;
+      el.setSelectionRange(pos, pos);
+    });
+  }
+
   return (
     <div className="field rich-field">
       {label && (
@@ -74,6 +97,20 @@ export default function RichTextField({
         </button>
         <button type="button" onClick={addLink} title="Insert link">
           🔗
+        </button>
+        <button
+          type="button"
+          onClick={() => makeList("ul")}
+          title="Bulleted list — select lines first to turn each into an item"
+        >
+          • List
+        </button>
+        <button
+          type="button"
+          onClick={() => makeList("ol")}
+          title="Numbered list — select lines first to turn each into an item"
+        >
+          1. List
         </button>
       </div>
       <textarea

@@ -21,8 +21,13 @@ export default function ContentSection({ section }) {
 function renderBlock(block, i) {
   switch (block?.type) {
     case "text":
+      // A <div> (not <p>) so block-level content like lists is valid HTML.
       return block.html ? (
-        <p key={i} dangerouslySetInnerHTML={{ __html: block.html }} />
+        <div
+          key={i}
+          className="content-section__text"
+          dangerouslySetInnerHTML={{ __html: block.html }}
+        />
       ) : null;
     case "image":
       return block.src ? (
