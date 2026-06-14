@@ -58,6 +58,49 @@ export default function StudentProgressDetail() {
 
   const studentName = profile?.displayName || profile?.email || "Student";
 
+  // Build the student's actual responses (quiz answers, coding submissions,
+  // reflections) from their saved progress, in curriculum order.
+  const responses = [];
+  if (!loading && !lessonsLoading) {
+    for (const lesson of lessons) {
+      const answers = progressByLesson[lesson.id]?.answers || {};
+      for (const section of lesson.sections || []) {
+        const saved = answers[section.id];
+        if (!saved) continue;
+        const base = {
+          key: `${lesson.id}-${section.id}`,
+          lessonTitle: lesson.title,
+          module: lesson.module,
+        };
+        if (section.type === "reflection" && saved.text?.trim()) {
+          responses.push({ ...base, kind: "reflection", prompt: section.prompt, text: saved.text });
+        } else if (section.type === "quiz" && saved.selected != null) {
+          const chosen = section.options?.find((o) => o.id === saved.selected);
+          responses.push({
+            ...base,
+            kind: "quiz",
+            question: section.question,
+            answerText: chosen?.text || saved.selected,
+            isCorrect: saved.isCorrect,
+          });
+        } else if (section.type === "coding" && saved.link?.trim()) {
+          const total = section.tasks?.length || 0;
+          const doneCount = saved.checked
+            ? Object.values(saved.checked).filter(Boolean).length
+            : 0;
+          responses.push({
+            ...base,
+            kind: "coding",
+            heading: section.heading,
+            link: saved.link,
+            done: doneCount,
+            total,
+          });
+        }
+      }
+    }
+  }
+
   return (
     <div className="instructor">
       <header className="instructor__header">
@@ -124,6 +167,71 @@ export default function StudentProgressDetail() {
             </tbody>
           </table>
         </Card>
+      )}
+
+      {!loading && !lessonsLoading && !error && (
+        <>
+          <h2 className="manager__module-heading">Responses</h2>
+          {responses.length === 0 ? (
+            <p className="instructor__empty">
+              This student hasn't submitted any quiz answers, code links, or
+              reflections yet.
+            </p>
+          ) : (
+            responses.map((r) => (
+              <Card key={r.key} className="response">
+                <div className="response__head">
+                  <span className={`response__kind response__kind--${r.kind}`}>
+                    {r.kind === "reflection"
+                      ? "Reflection"
+                      : r.kind === "quiz"
+                      ? "Quiz"
+                      : "Code"}
+                  </span>
+                  <span className="response__lesson">{r.lessonTitle}</span>
+                </div>
+
+                {r.kind === "reflection" && (
+                  <>
+                    <p className="response__prompt">{r.prompt}</p>
+                    <p className="response__text">{r.text}</p>
+                  </>
+                )}
+
+                {r.kind === "quiz" && (
+                  <>
+                    <p className="response__prompt">{r.question}</p>
+                    <p>
+                      <span
+                        className={`response__answer ${
+                          r.isCorrect ? "is-correct" : "is-wrong"
+                        }`}
+                      >
+                        {r.isCorrect ? "✓" : "✗"} {r.answerText}
+                      </span>
+                    </p>
+                  </>
+                )}
+
+                {r.kind === "coding" && (
+                  <>
+                    <p className="response__prompt">{r.heading}</p>
+                    <p className="response__text">
+                      {r.total > 0 && (
+                        <span className="response__tasks">
+                          {r.done}/{r.total} tasks checked ·{" "}
+                        </span>
+                      )}
+                      <a href={r.link} target="_blank" rel="noreferrer">
+                        {r.link}
+                      </a>
+                    </p>
+                  </>
+                )}
+              </Card>
+            ))
+          )}
+        </>
       )}
     </div>
   );
